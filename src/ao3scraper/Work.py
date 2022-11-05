@@ -36,6 +36,8 @@ STATS = [
     "complete",
     "words",
     "chapters",
+    "chapters_published",
+    "chapters_expected",
     "comments",
     "kudos",
     "bookmarks",
@@ -64,6 +66,12 @@ class Work:
 
         self._scrape_page()
         self._parse_metadata()
+
+    def __eq__(self, __o: object) -> bool:
+        return __o.work_id == self.work_id
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(work_id={self.work_id})"
 
     def _scrape_page(self):
         print("Scraping Main page...", end="")
@@ -124,6 +132,13 @@ class Work:
             if self.metadata.find("dd", class_="stats").find_all("dt", class_="status")[0].contents[0].split(":")[0]
             == "Completed"
             else False
+        )
+        self.stats["chapters_published"], self.stats["chapters_expected"] = self.stats["chapters"].split("/F")
+        self.stats["chapters_published"] = int(self.stats["chapters_published"])
+        self.stats["chapters_expected"] = (
+            self.stats["chapters_expected"]
+            if self.stats["chapters_expected"] == "?"
+            else int(self.stats["chapters_expected"])
         )
         print("Done")
 
