@@ -133,7 +133,7 @@ class Work:
             == "Completed"
             else False
         )
-        self.stats["chapters_published"], self.stats["chapters_expected"] = self.stats["chapters"].split("/F")
+        self.stats["chapters_published"], self.stats["chapters_expected"] = self.stats["chapters"].split("/")
         self.stats["chapters_published"] = int(self.stats["chapters_published"])
         self.stats["chapters_expected"] = (
             self.stats["chapters_expected"]
