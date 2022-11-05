@@ -128,7 +128,6 @@ class Work:
         self.stats = {
             stat["class"][0]: stat.contents[0] for stat in self.metadata.find("dd", class_="stats").find_all("dd")
         }
-        self.stats["published"] = datetime.strptime(self.stats["published"].text, "%Y-%m-%d")
         for stat in ["published", "status"]:
             if stat in self.stats:
                 self.stats[stat] = datetime.strptime(self.stats[stat].text, "%Y-%m-%d")
