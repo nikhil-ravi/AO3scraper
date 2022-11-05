@@ -143,6 +143,7 @@ class Work:
         print("Done")
 
     def _scrape_comments(self):
+        # //TODO: Get list of comments left
         pass
 
     def _scrape_kudos(self, query_delay: int = 5):
