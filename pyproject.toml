@@ -3,8 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "AO3 Scrapper"
-version = "0.0.1"
+name = "AO3scraper"
 authors = [
   { name="Nikhil Ravi", email="nr337@cornell.edu" },
 ]
@@ -16,7 +15,16 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dynamic = ["version"]
+
+dependencies = [
+  "beautifulsoup4",
+  "pandas",
+  "requests",
+  "lxml",
+  "tqdm"
+]
 
 [project.urls]
-"Homepage" = "https://github.com/nikhil-ravi/AO3scrapper"
-"Bug Tracker" = "https://github.com/nikhil-ravi/AO3scrapper/issues"
+"Homepage" = "https://github.com/nikhil-ravi/AO3scraper"
+"Bug Tracker" = "https://github.com/nikhil-ravi/AO3scraper/issues"
