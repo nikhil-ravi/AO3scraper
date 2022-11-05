@@ -30,11 +30,10 @@ LIST_TAGS = [
     "character",
     "freeform",
 ]
-OTHER_TAGS = [
-    "language",
-    "stats",
+STATS = [
     "published",
     "status",
+    "complete",
     "words",
     "chapters",
     "comments",
@@ -42,6 +41,18 @@ OTHER_TAGS = [
     "bookmarks",
     "hits",
 ]
+CLASS_PROPERTIES = (
+    [
+        "title",
+        "author",
+        "summary",
+        "language",
+        "kudos_by",
+        "bookmarks_by",
+    ]
+    + LIST_TAGS
+    + STATS
+)
 
 
 class Work:
@@ -65,6 +76,8 @@ class Work:
         print("Done")
 
     def _parse_metadata(self):
+        self._parse_title()
+        self._parse_summary()
         self._parse_authors()
         self._parse_header()
         self._parse_stats()
@@ -73,11 +86,21 @@ class Work:
             self._scrape_bookmarks()
             self._scrape_kudos()
 
+    def _parse_title(self):
+        print("Parsing title...", end="")
+        self.title = self.soup.find("h2", class_="title heading").contents[0].strip()
+        print("Done")
+
+    def _parse_summary(self):
+        print("Parsing summary...", end="")
+        self.summary = " ".join(
+            self.soup.find(class_="summary").find("p").get_text(separator="|", strip=True).split("|")
+        )
+        print("Done")
+
     def _parse_authors(self):
         print("Parsing author...", end="")
-        self.authors = self.soup.find("h3", class_="byline heading").select(
-            "a", rel="author"
-        )
+        self.authors = self.soup.find("h3", class_="byline heading").select("a", rel="author")
         self.authors = [author.contents[0] for author in self.authors]
         print("Done")
 
@@ -85,29 +108,20 @@ class Work:
         print("Parsing headers...", end="")
         self.metadata = self.soup.find("dl", class_="work meta group")
         self.tags = {
-            tag: [
-                subtags.contents[0].contents[0]
-                for subtags in self.metadata.find("dd", class_=tag).find_all("li")
-            ]
+            tag: [subtags.contents[0].contents[0] for subtags in self.metadata.find("dd", class_=tag).find_all("li")]
             for tag in LIST_TAGS
         }
-        self.tags["language"] = (
-            self.metadata.find("dd", class_="language").contents[0].strip()
-        )
+        self.tags["language"] = self.metadata.find("dd", class_="language").contents[0].strip()
         print("Done")
 
     def _parse_stats(self):
         print("Parsing stats...", end="")
         self.stats = {
-            stat["class"][0]: stat.contents[0]
-            for stat in self.metadata.find("dd", class_="stats").find_all("dd")
+            stat["class"][0]: stat.contents[0] for stat in self.metadata.find("dd", class_="stats").find_all("dd")
         }
         self.stats["complete"] = (
             True
-            if self.metadata.find("dd", class_="stats")
-            .find_all("dt", class_="status")[0]
-            .contents[0]
-            .split(":")[0]
+            if self.metadata.find("dd", class_="stats").find_all("dt", class_="status")[0].contents[0].split(":")[0]
             == "Completed"
             else False
         )
@@ -120,28 +134,22 @@ class Work:
         print("Scraping Kudos...|", end="")
         LastPage = False
         kudos_page = 1
-        self.kudos = set()
+        self.kudos_by = set()
         while not LastPage:
             time.sleep(query_delay)
-            kudos, LastPage = self.__scrape_kudos_page(
-                KUDOS_URL.format(work_id=self.work_id, page=kudos_page)
-            )
+            kudos, LastPage = self.__scrape_kudos_page(KUDOS_URL.format(work_id=self.work_id, page=kudos_page))
             if kudos:
-                self.kudos.update(kudos)
+                self.kudos_by.update(kudos)
             else:
                 print("Done")
                 return
             kudos_page += 1
 
-    def __scrape_kudos_page(
-        self, kudos_url: str, error_delay_seconds: int = 10
-    ) -> tuple[set[str] | None, bool]:
+    def __scrape_kudos_page(self, kudos_url: str, error_delay_seconds: int = 10) -> tuple[set[str] | None, bool]:
         req = requests.get(kudos_url, headers=HEADERS)
 
         while req.status_code == 429:
-            self.log.info(
-                f"\nRequest failed with status code 429. Retrying in {error_delay_seconds} seconds.\n"
-            )
+            self.log.info(f"\nRequest failed with status code 429. Retrying in {error_delay_seconds} seconds.\n")
             time.sleep(error_delay_seconds)
             req = requests.get(kudos_url, headers=HEADERS)
 
@@ -156,14 +164,14 @@ class Work:
         print("Scraping Bookmarks...|", end="")
         LastPage = False
         bookmarks_page = 1
-        self.bookmarks = set()
+        self.bookmarks_by = set()
         while not LastPage:
             time.sleep(query_delay)
             bookmarks, LastPage = self.__scrape_bookmarks_page(
                 BOOKMARKS_URL.format(work_id=self.work_id, page=bookmarks_page)
             )
             if bookmarks:
-                self.bookmarks.update(bookmarks)
+                self.bookmarks_by.update(bookmarks)
             else:
                 print("Done")
                 return
@@ -175,9 +183,7 @@ class Work:
         req = requests.get(bookmarks_url, headers=HEADERS)
 
         while req.status_code == 429:
-            self.log.info(
-                f"\nRequest failed with status code 429. Retrying in {error_delay_seconds} seconds.\n"
-            )
+            self.log.info(f"\nRequest failed with status code 429. Retrying in {error_delay_seconds} seconds.\n")
             time.sleep(error_delay_seconds)
             req = requests.get(bookmarks_url, headers=HEADERS)
 
