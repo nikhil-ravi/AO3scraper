@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "AO3 Scrapper"
+version = "0.0.1"
+authors = [
+  { name="Nikhil Ravi", email="nr337@cornell.edu" },
+]
+description = "A python package to scrape works from a Fandom and the metadata, statistics, comments, kudos, and bookmarks of works."
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/nikhil-ravi/AO3scrapper"
+"Bug Tracker" = "https://github.com/nikhil-ravi/AO3scrapper/issues"
