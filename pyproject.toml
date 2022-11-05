@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "AO3scrapper"
+name = "AO3scraper"
 version = "0.0.1"
 authors = [
   { name="Nikhil Ravi", email="nr337@cornell.edu" },
@@ -18,5 +18,5 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/nikhil-ravi/AO3scrapper"
-"Bug Tracker" = "https://github.com/nikhil-ravi/AO3scrapper/issues"
+"Homepage" = "https://github.com/nikhil-ravi/AO3scraper"
+"Bug Tracker" = "https://github.com/nikhil-ravi/AO3scraper/issues"

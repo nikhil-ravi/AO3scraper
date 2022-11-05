@@ -1,4 +1,4 @@
-name: AO3scrapper
+name: AO3scraper
 
 on: [push]
 
