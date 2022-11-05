@@ -20,7 +20,8 @@ dynamic = ["version"]
 dependencies = [
   "beautifulsoup4",
   "pandas",
-  "requests"
+  "requests",
+  "lxml"
 ]
 
 [project.urls]

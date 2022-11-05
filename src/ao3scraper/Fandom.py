@@ -7,19 +7,28 @@ import logging
 import sys
 from urllib.parse import urlparse, parse_qs, urlencode
 
+HEADERS = {
+    "User-Agent": "Mozilla/6.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
+    "Accept-Encoding": "none",
+    "Accept-Language": "en-US,en;q=0.8",
+    "Connection": "keep-alive",
+    "refere": "https://example.com",
+    "cookie": """your cookie value ( you can get that from your web page) """,
+}
+
 
 class FandomWorks:
     def __init__(
         self,
         base_url: str,
-        headers: dict,
         existing_list: Optional[str | set] = None,
         is_verbose: bool = False,
     ):
         self.base_url = base_url
         self.existing_list = existing_list
         self.process_existing_list()
-        self.headers = headers
         self.is_verbose = is_verbose
         self.configure_logger()
         self.page = 1
@@ -47,9 +56,7 @@ class FandomWorks:
     def process_existing_list(self):
         if self.existing_list and isinstance(self.existing_list, str):
             self.existing_list = set(
-                pd.read_csv(
-                    self.existing_list, header=None, dtype=str, compression="gzip"
-                )[0].to_list()
+                pd.read_csv(self.existing_list, header=None, dtype=str, compression="gzip")[0].to_list()
             )
         elif self.existing_list and isinstance(self.existing_list, list):
             self.existing_list = set(self.existing_list)
@@ -67,9 +74,7 @@ class FandomWorks:
         return self.existing_list
 
     def save_list_of_works(self, filename: str):
-        pd.DataFrame(self.existing_list).to_csv(
-            filename, index=False, header=False, compression="gzip"
-        )
+        pd.DataFrame(self.existing_list).to_csv(filename, index=False, header=False, compression="gzip")
 
     def set_list_of_works(self, query_delay: int = 5, filename: str = None):
         LastPage = False
@@ -85,14 +90,12 @@ class FandomWorks:
             self.log.info(".")
 
     def scrape_page(self, url, error_delay_seconds: int = 10):
-        text = requests.get(url, headers=self.headers)
+        text = requests.get(url, headers=HEADERS)
 
         while text.status_code == 429:
-            self.log.info(
-                f"\nRequest failed with status code 429. Retrying in {error_delay_seconds} seconds.\n"
-            )
+            self.log.info("+")
             time.sleep(error_delay_seconds)
-            text = requests.get(url, headers=self.headers)
+            text = requests.get(url, headers=HEADERS)
 
         soup = BeautifulSoup(text.text, "lxml")
         works = soup.select("li.work.blurb.group")

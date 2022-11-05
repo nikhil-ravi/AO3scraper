@@ -91,7 +91,9 @@ class Work:
             ]
             for tag in LIST_TAGS
         }
-        self.tags["language"] = self.metadata.find("dd", class_="language")
+        self.tags["language"] = (
+            self.metadata.find("dd", class_="language").contents[0].strip()
+        )
         print("Done")
 
     def _parse_stats(self):
