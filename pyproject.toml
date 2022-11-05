@@ -4,7 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "AO3scraper"
-version = "0.0.1"
 authors = [
   { name="Nikhil Ravi", email="nr337@cornell.edu" },
 ]
@@ -16,10 +15,13 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dynamic = ["dependencies"]
+dynamic = ["version"]
 
-[tool.setuptools.dynamic]
-dependencies = requirements.txt
+dependencies = [
+  "beautifulsoup4",
+  "pandas",
+  "requests"
+]
 
 [project.urls]
 "Homepage" = "https://github.com/nikhil-ravi/AO3scraper"
