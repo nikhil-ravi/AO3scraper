@@ -16,6 +16,10 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = requirements.txt
 
 [project.urls]
 "Homepage" = "https://github.com/nikhil-ravi/AO3scraper"
