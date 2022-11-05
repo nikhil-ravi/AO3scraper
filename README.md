@@ -1,20 +1,21 @@
-AO3scraper
----
+## AO3scraper
+
 A python package to scrape works from a Fandom and the metadata, statistics, comments, kudos, and bookmarks of works.
 
+## Installation
 
-Installation
----
 Install the package using the following command:
+
 ```
 pip install https://github.com/nikhil-ravi/AO3scraper/archive/refs/heads/main.zip
 ```
 
-Usage
----
+## Usage
+
 The package may be used as follows:
+
 ```python
-from AO3scraper.Work import Work
+from ao3scraper.Work import Work
 
 w = Work(work_id=35477104)
 ```

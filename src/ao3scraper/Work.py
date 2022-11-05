@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from bs4 import BeautifulSoup
 import time
@@ -127,6 +128,10 @@ class Work:
         self.stats = {
             stat["class"][0]: stat.contents[0] for stat in self.metadata.find("dd", class_="stats").find_all("dd")
         }
+        self.stats["published"] = datetime.strptime(self.stats["published"].text, "%Y-%m-%d")
+        for stat in ["published", "status"]:
+            if stat in self.stats:
+                self.stats[stat] = datetime.strptime(self.stats[stat].text, "%Y-%m-%d")
         self.stats["complete"] = (
             True
             if self.metadata.find("dd", class_="stats").find_all("dt", class_="status")[0].contents[0].split(":")[0]
@@ -134,7 +139,11 @@ class Work:
             else False
         )
         self.stats["chapters_published"], self.stats["chapters_expected"] = self.stats["chapters"].split("/")
-        self.stats["chapters_published"] = int(self.stats["chapters_published"])
+        for stat in ["words", "comments", "kudos", "hits", "chapters_published"]:
+            if stat in self.stats:
+                self.stats[stat] = int(self.stats[stat])
+        if "bookmarks" in self.stats:
+            self.stats["bookmarks"] = int(self.stats["bookmarks"].contents[0])
         self.stats["chapters_expected"] = (
             self.stats["chapters_expected"]
             if self.stats["chapters_expected"] == "?"
