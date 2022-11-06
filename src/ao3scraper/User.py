@@ -21,9 +21,9 @@ HEADERS = {
 @dataclass
 class User:
     user_name: str
-    url: str = field(init=False)
-    user_id: int = field(init=False)
-    joined: datetime = field(init=False)
+    url: str
+    user_id: int
+    joined: datetime
 
 
 class UserScraper:
