@@ -25,18 +25,20 @@ class User:
     user_id: int = field(init=False)
     joined: datetime = field(init=False)
 
-    def __post_init__(self):
-        self.url = USER_URL.format(user_name=self.user_name)
-        self._scrape_user_data()
 
-    def _scrape_user_data(self):
+class UserScraper:
+    def __init__(self, user_name: str):
+        self.user_name = user_name
+        self.url = USER_URL.format(user_name=self.user_name)
         req = requests.get(self.url, headers=HEADERS)
         while req.status_code == 429:
-            self.log.info("+")
             time.sleep(10)
             req = requests.get(self.url, headers=HEADERS)
         soup = BeautifulSoup(req.text, "lxml")
-        soup.find("dl", class_="meta").find_all("dd", class_="")
         joined, user_id = [item.text for item in soup.find("dl", class_="meta").find_all("dd", class_="")]
         self.joined = datetime.strptime(joined, "%Y-%m-%d")
         self.user_id = int(user_id)
+
+    @property
+    def user(self):
+        return User(**{"user_name": self.user_name, "url": self.url, "user_id": self.user_id, "joined": self.joined})

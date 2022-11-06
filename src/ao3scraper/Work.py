@@ -62,32 +62,34 @@ CLASS_PROPERTIES = (
 
 @dataclass
 class Work:
-    work_id: int
+    id: int
+    url: str
+    title: str
+    summary: str
+    authors: list[str]
+    language: str
+    rating: str
+    warning: list[str]
+    category: list[str]
+    fandom: list[str]
+    relationship: list[str]
+    character: list[str]
+    freeform: list[str]
+    published: datetime
+    status: datetime
+    complete: bool
+    words: int
+    chapters_published: int
+    chapters_expected: Optional[int]
+    comments: int
+    kudos: int
+    bookmarks: int
+    hits: int
 
-    url: str = field(init=False)
-    title: str = field(init=False)
-    summary: str = field(init=False)
-    authors: list[str] = field(init=False)
-    language: str = field(init=False)
-    rating: str = field(init=False)
-    warning: list[str] = field(init=False)
-    category: list[str] = field(init=False)
-    fandom: list[str] = field(init=False)
-    relationship: list[str] = field(init=False)
-    character: list[str] = field(init=False)
-    freeform: list[str] = field(init=False)
-    published: datetime = field(init=False)
-    status: Optional[datetime] = field(init=False)
-    complete: bool = field(init=False)
-    words: int = field(init=False)
-    chapters_published: int = field(init=False)
-    chapters_expected: Optional[int] = field(init=False)
-    comments: int = field(init=False)
-    kudos: int = field(init=False)
-    bookmarks: int = field(init=False)
-    hits: int = field(init=False)
 
-    def __post_init__(self):
+class WorkScraper:
+    def __init__(self, work_id: int):
+        self.work_id = work_id
         self.url = BASE_URL.format(work_id=self.work_id)
 
         self._scrape_page()
@@ -186,39 +188,79 @@ class Work:
         self.bookmarks = self.stats["bookmarks"]
         self.hits = self.stats["hits"]
 
+    @property
+    def work(self) -> Work:
+        return Work(
+            **{
+                "id": self.work_id,
+                "url": self.url,
+                "title": self.title,
+                "summary": self.summary,
+                "language": self.language,
+                "rating": self.rating,
+                "published": self.published,
+                "status": self.status,
+                "complete": self.complete,
+                "words": self.words,
+                "chapters_published": self.chapters_published,
+                "chapters_expected": self.chapters_expected,
+                "comments": self.comments,
+                "kudos": self.kudos,
+                "bookmarks": self.bookmarks,
+                "hits": self.hits,
+                "authors": self.authors,
+                "warning": self.warning,
+                "category": self.category,
+                "fandom": self.fandom,
+                "relationship": self.relationship,
+                "character": self.character,
+                "freeform": self.freeform,
+            }
+        )
+
 
 @dataclass
 class Comments:
     work_id: int
-    comments: Optional[list] = field(init=False)
+    comments: list
 
-    def __post_init__(self):
+
+class CommentsScraper:
+    def __init__(self, work_id: int):
+        self.work_id = work_id
         self._scrape_comments()
 
     def _scrape_comments(self):
         # //TODO: Get list of comments left
-        self.comments = []
+        self.comments_list = []
+
+    @property
+    def comments(self) -> Comments:
+        return Comments(**{"work_id": self.work_id, "comments": self.comments_list})
 
 
 @dataclass
 class Bookmarks:
     work_id: int
-    bookmarks: Optional[list] = field(init=False)
+    bookmarks: set[tuple[int, str]]
 
-    def __post_init__(self):
+
+class BookmarksScraper:
+    def __init__(self, work_id: int):
+        self.work_id = work_id
         self._scrape_bookmarks()
 
     def _scrape_bookmarks(self, query_delay: int = 5):
         LastPage = False
         bookmarks_page = 1
-        self.bookmarks = set()
+        self.bookmarks_list = set()
         while not LastPage:
             time.sleep(query_delay)
             bookmarks, LastPage = self.__scrape_bookmarks_page(
                 BOOKMARKS_URL.format(work_id=self.work_id, page=bookmarks_page)
             )
             if bookmarks:
-                self.bookmarks.update(bookmarks)
+                self.bookmarks_list.update(bookmarks)
             else:
                 return
             bookmarks_page += 1
@@ -243,7 +285,7 @@ class Bookmarks:
             set(
                 [
                     (  # Bookmarker's ( user id, user name)
-                        bookmark["class"][-1].split("-")[1],
+                        int(bookmark["class"][-1].split("-")[1]),
                         bookmark.find("a", href=True)["href"].split("/")[2],
                     )
                     for bookmark in bookmarks.find_all("li", class_="user")
@@ -252,24 +294,31 @@ class Bookmarks:
             False,
         )
 
+    @property
+    def bookmarks(self) -> Comments:
+        return Bookmarks(**{"work_id": self.work_id, "bookmarks": self.bookmarks_list})
+
 
 @dataclass
 class Kudos:
     work_id: int
-    kudos: Optional[list] = field(init=False)
+    kudos: set[str]
 
-    def __post_init__(self):
+
+class KudosScraper:
+    def __init__(self, work_id: int):
+        self.work_id = work_id
         self._scrape_kudos()
 
     def _scrape_kudos(self, query_delay: int = 5):
         LastPage = False
         kudos_page = 1
-        self.kudos = set()
+        self.kudos_list = set()
         while not LastPage:
             time.sleep(query_delay)
             kudos, LastPage = self.__scrape_kudos_page(KUDOS_URL.format(work_id=self.work_id, page=kudos_page))
             if kudos:
-                self.kudos.update(kudos)
+                self.kudos_list.update(kudos)
             else:
                 return
             kudos_page += 1
@@ -287,3 +336,7 @@ class Kudos:
         if not kudos:
             return None, True
         return set([kudo.contents[0] for kudo in kudos.find_all("a")]), False
+
+    @property
+    def kudos(self) -> Comments:
+        return Kudos(**{"work_id": self.work_id, "kudos": self.kudos_list})
