@@ -126,5 +126,4 @@ dmypy.json
 
 *.ipynb
 data/
-AO3.py
-worksList.py
+.sql
