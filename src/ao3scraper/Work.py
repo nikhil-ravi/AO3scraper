@@ -8,9 +8,7 @@ import requests
 BASE_URL = "https://archiveofourown.com/works/{work_id}?view_adult=true"
 KUDOS_URL = "https://archiveofourown.com/works/{work_id}/kudos?page={page}"
 BOOKMARKS_URL = "https://archiveofourown.com/works/{work_id}/bookmarks?page={page}"
-COMMENTS_URL = (
-    "https://archiveofourown.com/works/{work_id}?view_adult=true&show_comments=true&view_full_work=true#comments"
-)
+COMMENTS_URL = "https://archiveofourown.com/works/{work_id}?view_adult=true&show_comments=true&view_full_work=true#comments"
 HEADERS = {
     "User-Agent": "Mozilla/6.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -121,12 +119,16 @@ class WorkScraper:
     def _parse_summary(self):
         summary = self.soup.find(class_="summary")
         if summary:
-            self.summary = " ".join(summary.find("p").get_text(separator="|", strip=True).split("|"))
+            self.summary = " ".join(
+                summary.find("p").get_text(separator="|", strip=True).split("|")
+            )
         else:
             self.summary = ""
 
     def _parse_authors(self):
-        authors = self.soup.find("h3", class_="byline heading").select("a", rel="author", href=True)
+        authors = self.soup.find("h3", class_="byline heading").select(
+            "a", rel="author", href=True
+        )
         if authors:
             self.authors = [author.text for author in authors]
         else:
@@ -138,7 +140,9 @@ class WorkScraper:
         for tag in LIST_TAGS:
             subtags = self.metadata.find("dd", class_=tag)
             if subtags:
-                self.tags[tag] = [subtag.contents[0].contents[0] for subtag in subtags.find_all("li")]
+                self.tags[tag] = [
+                    subtag.contents[0].contents[0] for subtag in subtags.find_all("li")
+                ]
             else:
                 self.tags[tag] = []
         self.rating = self.tags["rating"][0]
@@ -158,14 +162,19 @@ class WorkScraper:
 
     def _parse_stats(self):
         self.stats = {
-            stat["class"][0]: stat.contents[0] for stat in self.metadata.find("dd", class_="stats").find_all("dd")
+            stat["class"][0]: stat.text
+            for stat in self.metadata.find("dd", class_="stats").find_all("dd")
+            if stat.text
         }
         for stat in ["published", "status"]:
             if stat in self.stats:
                 self.stats[stat] = datetime.strptime(self.stats[stat].text, "%Y-%m-%d")
         if "status" in self.stats:
             if (
-                self.metadata.find("dd", class_="stats").find_all("dt", class_="status")[0].contents[0].split(":")[0]
+                self.metadata.find("dd", class_="stats")
+                .find_all("dt", class_="status")[0]
+                .contents[0]
+                .split(":")[0]
                 == "Completed"
             ):
                 self.stats["complete"] = True
@@ -174,7 +183,9 @@ class WorkScraper:
         else:
             self.stats["status"] = self.stats["published"]
             self.stats["complete"] = True
-        self.stats["chapters_published"], self.stats["chapters_expected"] = self.stats["chapters"].split("/")
+        self.stats["chapters_published"], self.stats["chapters_expected"] = self.stats[
+            "chapters"
+        ].split("/")
         for stat in ["words", "comments", "kudos", "hits", "chapters_published"]:
             if stat in self.stats:
                 self.stats[stat] = int(self.stats[stat])
@@ -185,7 +196,9 @@ class WorkScraper:
         else:
             self.stats["bookmarks"] = 0
         self.stats["chapters_expected"] = (
-            None if self.stats["chapters_expected"] == "?" else int(self.stats["chapters_expected"])
+            None
+            if self.stats["chapters_expected"] == "?"
+            else int(self.stats["chapters_expected"])
         )
         self.published = self.stats["published"]
         self.status = self.stats["status"]
@@ -326,14 +339,18 @@ class KudosScraper:
         self.kudos_list = set()
         while not LastPage:
             time.sleep(query_delay)
-            kudos, LastPage = self.__scrape_kudos_page(KUDOS_URL.format(work_id=self.work_id, page=kudos_page))
+            kudos, LastPage = self.__scrape_kudos_page(
+                KUDOS_URL.format(work_id=self.work_id, page=kudos_page)
+            )
             if kudos:
                 self.kudos_list.update(kudos)
             else:
                 return
             kudos_page += 1
 
-    def __scrape_kudos_page(self, kudos_url: str, error_delay_seconds: int = 10) -> tuple[set[str] | None, bool]:
+    def __scrape_kudos_page(
+        self, kudos_url: str, error_delay_seconds: int = 10
+    ) -> tuple[set[str] | None, bool]:
         req = requests.get(kudos_url, headers=HEADERS)
 
         while req.status_code == 429:
