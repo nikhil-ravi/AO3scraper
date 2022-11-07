@@ -1,6 +1,5 @@
-from dataclasses import dataclass, field
+from pydantic.dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 from bs4 import BeautifulSoup
 import time
 import requests
@@ -18,6 +17,14 @@ HEADERS = {
 }
 
 
+class UserNotFound(Exception):
+    """User Not Found"""
+
+    def __init__(self, user_name: str):
+        self.message = f"User {user_name} not found."  # without this you may get DeprecationWarning
+        super(UserNotFound, self).__init__(self.message)
+
+
 @dataclass
 class User:
     user_name: str
@@ -31,9 +38,13 @@ class UserScraper:
         self.user_name = user_name
         self.url = USER_URL.format(user_name=self.user_name)
         req = requests.get(self.url, headers=HEADERS)
+        if req.status_code == 404:
+            raise UserNotFound(self.user_name)
         while req.status_code == 429:
             time.sleep(10)
             req = requests.get(self.url, headers=HEADERS)
+            if req.status_code == 404:
+                raise UserNotFound(self.user_name)
         soup = BeautifulSoup(req.text, "lxml")
         joined, user_id = [item.text for item in soup.find("dl", class_="meta").find_all("dd", class_="")]
         self.joined = datetime.strptime(joined, "%Y-%m-%d")
