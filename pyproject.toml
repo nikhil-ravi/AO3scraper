@@ -22,7 +22,9 @@ dependencies = [
   "pandas",
   "requests",
   "lxml",
-  "tqdm"
+  "tqdm",
+  "argparse",
+  "pydantic"
 ]
 
 [project.urls]
