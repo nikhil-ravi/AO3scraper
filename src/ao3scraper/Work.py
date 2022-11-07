@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from pydantic.dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 from bs4 import BeautifulSoup
@@ -80,7 +80,7 @@ class Work:
     complete: bool
     words: int
     chapters_published: int
-    chapters_expected: Optional[int]
+    chapters_expected: None | int
     comments: int
     kudos: int
     bookmarks: int
@@ -114,16 +114,25 @@ class WorkScraper:
         self._parse_stats()
 
     def _parse_title(self):
-        self.title = self.soup.find("h2", class_="title heading").contents[0].strip()
+        tmp = self.soup.find("h2", class_="title heading")
+        if tmp:
+            self.title = tmp.contents[0].strip()
+        else:
+            self.title = ""
 
     def _parse_summary(self):
-        self.summary = " ".join(
-            self.soup.find(class_="summary").find("p").get_text(separator="|", strip=True).split("|")
-        )
+        tmp = self.soup.find(class_="summary")
+        if tmp:
+            self.summary = " ".join(tmp.find("p").get_text(separator="|", strip=True).split("|"))
+        else:
+            self.summary = ""
 
     def _parse_authors(self):
         self.authors = self.soup.find("h3", class_="byline heading").select("a", rel="author", href=True)
-        self.authors = [author.text for author in self.authors]
+        if self.authors:
+            self.authors = [author.text for author in self.authors]
+        else:
+            self.authors = []
 
     def _parse_header(self):
         self.metadata = self.soup.find("dl", class_="work meta group")
@@ -134,8 +143,6 @@ class WorkScraper:
                 self.tags[tag] = [subtag.contents[0].contents[0] for subtag in subtags.find_all("li")]
             else:
                 self.tags[tag] = []
-
-        self.tags["language"] = self.metadata.find("dd", class_="language").contents[0].strip()
         self.rating = self.tags["rating"][0]
         self.warning = self.tags["warning"]
         self.category = self.tags["category"]
@@ -143,6 +150,12 @@ class WorkScraper:
         self.relationship = self.tags["relationship"]
         self.character = self.tags["character"]
         self.freeform = self.tags["freeform"]
+
+        tmp = self.metadata.find("dd", class_="language")
+        if tmp:
+            self.tags["language"] = tmp.contents[0].strip()
+        else:
+            self.tags["language"] = ""
         self.language = self.tags["language"]
 
     def _parse_stats(self):
