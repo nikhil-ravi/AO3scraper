@@ -16,5 +16,5 @@ def main():
     ).to_csv("./data/HP.csv.gzip", index=False, compression="gzip")
 
 
-if __name__ == "__main":
+if __name__ == "__main__":
     main()
