@@ -1,6 +1,5 @@
 from pydantic.dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 from bs4 import BeautifulSoup
 import time
 import requests
@@ -101,7 +100,6 @@ class WorkScraper:
     def _scrape_page(self):
         req = requests.get(self.url, headers=HEADERS)
         while req.status_code == 429:
-            self.log.info("+")
             time.sleep(10)
             req = requests.get(self.url, headers=HEADERS)
         self.soup = BeautifulSoup(req.text, "lxml")
@@ -114,23 +112,23 @@ class WorkScraper:
         self._parse_stats()
 
     def _parse_title(self):
-        tmp = self.soup.find("h2", class_="title heading")
-        if tmp:
-            self.title = tmp.contents[0].strip()
+        title = self.soup.find("h2", class_="title heading")
+        if title:
+            self.title = title.contents[0].strip()
         else:
             self.title = ""
 
     def _parse_summary(self):
-        tmp = self.soup.find(class_="summary")
-        if tmp:
-            self.summary = " ".join(tmp.find("p").get_text(separator="|", strip=True).split("|"))
+        summary = self.soup.find(class_="summary")
+        if summary:
+            self.summary = " ".join(summary.find("p").get_text(separator="|", strip=True).split("|"))
         else:
             self.summary = ""
 
     def _parse_authors(self):
-        self.authors = self.soup.find("h3", class_="byline heading").select("a", rel="author", href=True)
-        if self.authors:
-            self.authors = [author.text for author in self.authors]
+        authors = self.soup.find("h3", class_="byline heading").select("a", rel="author", href=True)
+        if authors:
+            self.authors = [author.text for author in authors]
         else:
             self.authors = []
 
@@ -151,9 +149,9 @@ class WorkScraper:
         self.character = self.tags["character"]
         self.freeform = self.tags["freeform"]
 
-        tmp = self.metadata.find("dd", class_="language")
-        if tmp:
-            self.tags["language"] = tmp.contents[0].strip()
+        language = self.metadata.find("dd", class_="language")
+        if language:
+            self.tags["language"] = language.contents[0].strip()
         else:
             self.tags["language"] = ""
         self.language = self.tags["language"]
@@ -284,7 +282,6 @@ class BookmarksScraper:
         req = requests.get(bookmarks_url, headers=HEADERS)
 
         while req.status_code == 429:
-            self.log.info(f"\nRequest failed with status code 429. Retrying in {error_delay_seconds} seconds.\n")
             time.sleep(error_delay_seconds)
             req = requests.get(bookmarks_url, headers=HEADERS)
 
@@ -340,7 +337,6 @@ class KudosScraper:
         req = requests.get(kudos_url, headers=HEADERS)
 
         while req.status_code == 429:
-            self.log.info(f"\nRequest failed with status code 429. Retrying in {error_delay_seconds} seconds.\n")
             time.sleep(error_delay_seconds)
             req = requests.get(kudos_url, headers=HEADERS)
 
