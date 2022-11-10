@@ -126,4 +126,7 @@ dmypy.json
 
 *.ipynb
 data/
+database/
+notebooks/
 .sql
+home.py

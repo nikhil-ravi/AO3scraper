@@ -21,7 +21,8 @@ CREATE TYPE "category_enum" AS ENUM (
   'Gen',
   'M/M',
   'Multi',
-  'Other'
+  'Other',
+  'None' //TODO: Add this element on PostgreSQL
 );
 
 CREATE TABLE "languages_list" (
