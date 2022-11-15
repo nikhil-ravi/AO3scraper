@@ -7,8 +7,8 @@ def find_correct_character(
     original: str, options: list, characters_occurences: pd.DataFrame
 ):
     if (
-        ("mr" in original)
-        or ("mrs" in original)
+        ("mr " in original.lower())
+        or ("mrs " in original)
         or ("jr." in original)
         or ("sr." in original)
     ):
@@ -31,20 +31,20 @@ def clean_relationship(
     replace_w_closest_character: bool = True,
 ) -> str:
     if s.lower() == "dramione" or s.lower() == "dmhg":
-        s = "dracomalfoy/hermionegranger"
+        s = "Draco Malfoy/Hermione Granger"
     if (
         "drarry" in s.lower()
         or "drarrry" in s.lower()
         or "hp/dm" in s.lower()
-        or s == "h/d"
+        or s.lower() == "h/d"
     ):
-        s = "dracomalfoy/harrypotter"
+        s = "Draco Malfoy/Harry Potter"
     if "wolfstar" in s.lower():
-        s = "remuslupin/siriusblack"
+        s = "Remus Lupin/Sirius Black"
     if "ss/rl" in s.lower():
-        s = "remuslupin/severussnape"
+        s = "Remus Lupin/Severus Snape"
     if "snarry" in s.lower() or "ss/hp" in s.lower() or "hp/ss" in s.lower():
-        s = "harrypotter/severussnape"
+        s = "Harry Potter/Severus Snape"
     # Remove implied/background and other words
     stopwords = {
         "implied",
@@ -83,7 +83,7 @@ def clean_relationship(
                             characters_occurences,
                         )
                         if replace_w_closest_character
-                        else character.replace(" ","").lower()
+                        else character #.replace(" ","").lower()
                         for character in s.split(splitter)
                     ]
                 )
